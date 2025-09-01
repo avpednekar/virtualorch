@@ -6,42 +6,19 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      display: flex;
-      gap: 20px;
-      padding: 20px;
-      background: #111;
-      color: #eee;
-      align-items: flex-start;
+      margin: 0; font-family: Arial, sans-serif;
+      display:flex; gap:20px; padding:20px;
+      background:#111; color:#eee; align-items:flex-start;
     }
-    #left { width: 640px; }
-    #controls {
-      width: 360px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    canvas {
-      background: #222;
-      border-radius: 8px;
-    }
-    button, select {
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: none;
-    }
-    .big { font-size: 18px; padding: 12px; }
-    .info {
-      background: #141414;
-      padding: 12px;
-      border-radius: 8px;
-      color: #ddd;
-    }
-    label { font-size: 14px; }
+    #left { width:640px; }
+    #controls { width:360px; display:flex; flex-direction:column; gap:12px; }
+    canvas { background:#222; border-radius:8px; }
+    button, select { padding:10px; font-size:16px; border-radius:6px; border: none; }
+    .big { font-size:18px; padding:12px; }
+    .info { background:#141414; padding:12px; border-radius:8px; color:#ddd; }
+    label { font-size:14px; }
   </style>
-  <!-- MediaPipe Pose JS (cdn) -->
+  <!-- MediaPipe Pose + Utils -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/pose.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
@@ -61,7 +38,7 @@
 
     <select id="songSelect" class="big">
       <option value="">Select a song</option>
-      <option value="https://drive.google.com/uc?export=download&id=1dSuG7DN2iCSBdkdwj5qdm_ksk-vWg5qa">Mahler Adagietto</option>
+      <option value="adagietto.mp3">Mahler Adagietto</option>
       <option value="https://drive.google.com/uc?export=download&id=1IXkMTfYC-JwiN6p9kIB28trcn1-MvjkC">Mozart Nachtmusik</option>
       <option value="https://drive.google.com/uc?export=download&id=1Vv2nGpouHiXRGIa3npB08VrwHJr_obPc">Tchaikovsky Fairy</option>
     </select>
@@ -91,7 +68,7 @@
   const speedEl = document.getElementById('speed');
   const volEl = document.getElementById('vol');
 
-  // parameters
+  // Parameters
   let origin = {x: 320, y: 240};
   let minDist = 40;
   let audio = new Audio();
@@ -101,12 +78,13 @@
 
   function dist(x1,y1,x2,y2){return Math.hypot(x1-x2,y1-y2);}
 
-  const pose = new Pose({locateFile: (f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${f}`});
+  // Setup Pose
+  const pose = new Pose({
+    locateFile: (f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${f}`
+  });
   pose.setOptions({
-    modelComplexity:1,
-    smoothLandmarks:true,
-    minDetectionConfidence:0.6,
-    minTrackingConfidence:0.6
+    modelComplexity:1, smoothLandmarks:true,
+    minDetectionConfidence:0.6, minTrackingConfidence:0.6
   });
   pose.onResults(onResults);
 
@@ -135,7 +113,7 @@
     ctx.beginPath(); ctx.arc(lx,ly,10,0,Math.PI*2); ctx.fillStyle="cyan"; ctx.fill();
     ctx.beginPath(); ctx.arc(rx,ry,10,0,Math.PI*2); ctx.fillStyle="orange"; ctx.fill();
 
-    // Left wrist -> BPM
+    // Left wrist -> BPM control
     if(dist(lx,ly,origin.x,origin.y)<minDist){
       const now=performance.now()/1000;
       if(!start_time){start_time=now;}
@@ -155,7 +133,7 @@
       }
     }
 
-    // Right wrist -> volume
+    // Right wrist -> volume control
     const mid=canvas.height/2;
     const step=(mid-ry)/mid*0.01;
     volume=0.92*volume+0.08*Math.max(0.05,Math.min(1,volume+step));
