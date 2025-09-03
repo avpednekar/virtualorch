@@ -102,6 +102,30 @@ if (leftWrist) {
   smoothedWristY = smooth(leftWrist.y, smoothedWristY);
   speed = 1 + (1 - smoothedWristY) * 4;
 }
+let dynamics = 1;        // what we control
+let smoothedY = 0.5;     // mid screen default
+
+function onResults(results) {
+  if (results.poseLandmarks) {
+    const rightWrist = results.poseLandmarks[16]; // 16 = right wrist
+
+    if (rightWrist) {
+      let y = rightWrist.y;
+
+      // detect if it's a fast upward move
+      if (y < smoothedY - 0.05) {
+        // snap quickly if wrist moves up fast
+        smoothedY = y;
+      } else {
+        // otherwise, smooth normally
+        smoothedY = 0.8 * smoothedY + 0.2 * y;
+      }
+
+      // map smoothedY into "dynamics" (e.g., 1–5)
+      dynamics = 1 + (1 - smoothedY) * 4;
+    }
+  }
+}
 
   function draw(results){
     ctx.clearRect(0,0,canvas.width,canvas.height);
