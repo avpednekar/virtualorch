@@ -68,7 +68,6 @@
   const speedEl = document.getElementById('speed');
   const volEl = document.getElementById('vol');
 
-  // Parameters
   let origin = {x: 320, y: 240};
   let minDist = 40;
   let audio = new Audio();
@@ -78,7 +77,6 @@
 
   function dist(x1,y1,x2,y2){return Math.hypot(x1-x2,y1-y2);}
 
-  // Setup Pose
   const pose = new Pose({
     locateFile: (f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${f}`
   });
@@ -102,26 +100,23 @@ if (leftWrist) {
   smoothedWristY = smooth(leftWrist.y, smoothedWristY);
   speed = 1 + (1 - smoothedWristY) * 4;
 }
-let dynamics = 1;        // what we control
-let smoothedY = 0.5;     // mid screen default
+let dynamics = 1;       
+let smoothedY = 0.5;    
 
 function onResults(results) {
   if (results.poseLandmarks) {
-    const rightWrist = results.poseLandmarks[16]; // 16 = right wrist
+    const rightWrist = results.poseLandmarks[16];
 
     if (rightWrist) {
       let y = rightWrist.y;
 
-      // detect if it's a fast upward move
+      
       if (y < smoothedY - 0.05) {
-        // snap quickly if wrist moves up fast
         smoothedY = y;
       } else {
-        // otherwise, smooth normally
         smoothedY = 0.8 * smoothedY + 0.2 * y;
       }
 
-      // map smoothedY into "dynamics" (e.g., 1–5)
       dynamics = 1 + (1 - smoothedY) * 4;
     }
   }
@@ -130,7 +125,6 @@ function onResults(results) {
   function draw(results){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.drawImage(results.image,0,0,canvas.width,canvas.height);
-    // origin
     ctx.beginPath(); ctx.arc(origin.x,origin.y,8,0,Math.PI*2); ctx.fillStyle="red"; ctx.fill();
     const mid=canvas.height/2;
     ctx.beginPath(); ctx.moveTo(0,mid); ctx.lineTo(canvas.width,mid);
@@ -143,11 +137,9 @@ function onResults(results) {
     const L=res.poseLandmarks[15], R=res.poseLandmarks[16];
     const lx=L.x*canvas.width, ly=L.y*canvas.height;
     const rx=R.x*canvas.width, ry=R.y*canvas.height;
-    // draw wrists
     ctx.beginPath(); ctx.arc(lx,ly,10,0,Math.PI*2); ctx.fillStyle="cyan"; ctx.fill();
     ctx.beginPath(); ctx.arc(rx,ry,10,0,Math.PI*2); ctx.fillStyle="orange"; ctx.fill();
 
-    // Left wrist -> BPM control
     if(dist(lx,ly,origin.x,origin.y)<minDist){
       const now=performance.now()/1000;
       if(!start_time){start_time=now;}
@@ -167,7 +159,6 @@ function onResults(results) {
       }
     }
 
-    // Right wrist -> volume control
     const mid=canvas.height/2;
     const step=(mid-ry)/mid*0.01;
     volume=0.92*volume+0.08*Math.max(0.05,Math.min(1,volume+step));
